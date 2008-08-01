@@ -135,9 +135,26 @@ module Icalendar
         if key =~ /ip_.*/
           key = key[3..-1]
         end
+        
+        show_multiple_lines = false
+        if multi_property?(key)
+          val.each{|v| if v.respond_to?(:ical_params) and !v.ical_params.nil? and !v.ical_params.empty? then show_multiple_lines = true end}
+        elsif multiline_property?(key)
+          show_multiple_lines = true
+        end
 
         # Property name
-        unless multiline_property?(key) or multi_property?(key)
+        if show_multiple_lines
+          prelude = "#{key.gsub(/_/, '-').upcase}" 
+           val.each do |v| 
+              params = print_parameters(v)
+              value = ":#{v.to_ical}"
+              escaped = prelude + params + value.gsub("\\", "\\\\").gsub("\n", "\\n").gsub(",", "\\,").gsub(";", "\\;")
+              s << escaped.slice!(0, MAX_LINE_LENGTH) << "\r\n " while escaped.size > MAX_LINE_LENGTH
+              s << escaped << "\r\n"
+              s.gsub!(/ *$/, '')
+           end
+         else 
            prelude = "#{key.gsub(/_/, '-').upcase}" + 
 
            # Possible parameters
@@ -149,16 +166,6 @@ module Icalendar
            s << escaped.slice!(0, MAX_LINE_LENGTH) << "\r\n " while escaped.size > MAX_LINE_LENGTH
            s << escaped << "\r\n"
            s.gsub!(/ *$/, '')
-         else 
-           prelude = "#{key.gsub(/_/, '-').upcase}" 
-            val.each do |v| 
-               params = print_parameters(v)
-               value = ":#{v.to_ical}"
-               escaped = prelude + params + value.gsub("\\", "\\\\").gsub("\n", "\\n").gsub(",", "\\,").gsub(";", "\\;")
-               s << escaped.slice!(0, MAX_LINE_LENGTH) << "\r\n " while escaped.size > MAX_LINE_LENGTH
-               s << escaped << "\r\n"
-               s.gsub!(/ *$/, '')
-            end
          end
       end
       s
