@@ -36,8 +36,8 @@ class TestTimezone < Test::Unit::TestCase
     standard.dtstart =                "19701101T020000"
     standard.recurrence_rules =       ["YEARLY;BYMONTH=11;BYDAY=1SU"]
 
-    timezone.add(daylight)
     timezone.add(standard)
+    timezone.add(daylight)
     @cal.add(timezone)
     assert_equal(@testTimezone, @cal.timezones.first.to_ical)
   end
