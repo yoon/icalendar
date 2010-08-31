@@ -37,6 +37,8 @@ module Icalendar
     # time-zone = "Z" / time-numzone
     # time-numzome = sign time-hour [":"] time-minute
     TIME = '(\d\d):?(\d\d):?(\d\d)(\.\d+)?(Z|[-+]\d\d:?\d\d)?'
+    CRLF = "\r\n"
+
 
     def initialize(src)
       # Setup the parser method hash table
@@ -50,7 +52,7 @@ module Icalendar
         raise ArgumentError, "CalendarParser.new cannot be called with a #{src.class} type!"
       end
 
-      @prev_line = @file.gets
+      @prev_line = @file.gets(CRLF)
       @prev_line.chomp! unless @prev_line.nil?
 
       @@logger.debug("New Calendar Parser: #{@file.inspect}")
@@ -67,7 +69,7 @@ module Icalendar
 
       # Loop through until we get to a non-continuation line...
       loop do
-        nextLine = @file.gets
+        nextLine = @file.gets(CRLF)
         @@logger.debug "new_line: #{nextLine}"
 
         if !nextLine.nil?
